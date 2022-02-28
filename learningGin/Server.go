@@ -2,8 +2,11 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"io"
 	"learningGin/controller"
+	"learningGin/middleware"
 	"learningGin/service"
+	"os"
 )
 
 var (
@@ -11,8 +14,15 @@ var (
 	videoController controller.VideoController = controller.New(videoService)
 )
 
+// setup log to file
+func setupLogOutput() {
+	f, _ := os.Create("gin.log")
+	gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
+}
 func main() {
-	server := gin.Default()
+	setupLogOutput()
+	server := gin.New()
+	server.Use(gin.Recovery(), middleware.Logger(), middleware.BasicAuth())
 	server.GET("/videos", func(context *gin.Context) {
 		context.JSON(200, videoController.FindAll())
 	})
