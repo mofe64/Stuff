@@ -6,6 +6,7 @@ import (
 	"learningGin/controller"
 	"learningGin/middleware"
 	"learningGin/service"
+	"net/http"
 	"os"
 )
 
@@ -22,13 +23,20 @@ func setupLogOutput() {
 func main() {
 	setupLogOutput()
 	server := gin.New()
-	server.Use(gin.Recovery(), middleware.Logger(), middleware.BasicAuth())
+	//server.Use(gin.Recovery(), middleware.Logger(), middleware.BasicAuth())
+	server.Use(gin.Recovery(), middleware.Logger())
 	server.GET("/videos", func(context *gin.Context) {
 		context.JSON(200, videoController.FindAll())
 	})
 
 	server.POST("/videos", func(context *gin.Context) {
-		context.JSON(200, videoController.Save(context))
+		err := videoController.Save(context)
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		} else {
+			context.JSON(http.StatusOK, gin.H{"message": "created"})
+		}
+
 	})
 	server.GET("/test", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
