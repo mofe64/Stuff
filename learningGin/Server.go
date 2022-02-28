@@ -25,24 +25,28 @@ func main() {
 	server := gin.New()
 	//server.Use(gin.Recovery(), middleware.Logger(), middleware.BasicAuth())
 	server.Use(gin.Recovery(), middleware.Logger())
-	server.GET("/videos", func(context *gin.Context) {
-		context.JSON(200, videoController.FindAll())
-	})
 
-	server.POST("/videos", func(context *gin.Context) {
-		err := videoController.Save(context)
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		} else {
-			context.JSON(http.StatusOK, gin.H{"message": "created"})
-		}
-
-	})
-	server.GET("/test", func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{
-			"message": "Ok!",
+	apiRoutes := server.Group("/api")
+	{
+		apiRoutes.GET("/videos", func(context *gin.Context) {
+			context.JSON(200, videoController.FindAll())
 		})
-	})
+
+		apiRoutes.POST("/videos", func(context *gin.Context) {
+			err := videoController.Save(context)
+			if err != nil {
+				context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			} else {
+				context.JSON(http.StatusOK, gin.H{"message": "created"})
+			}
+		})
+		apiRoutes.GET("/test", func(ctx *gin.Context) {
+			ctx.JSON(200, gin.H{
+				"message": "Ok!",
+			})
+		})
+	}
+
 	err := server.Run(":8080")
 	if err != nil {
 		return
